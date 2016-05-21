@@ -1,27 +1,27 @@
 .pos 0
 irmovl Stack,%esp
 rrmovl %esp,%ebp
-irmovl ele1,%edx
-pushl %edx
+irmovl ele1,%eax
+pushl %eax
 call rsum_list
 halt
 # Sample linked list
 .align 4
 ele1:
-.long 0x008
-.long ele2
+	.long 0x008
+	.long ele2
 ele2:
-.long 0x000
-.long ele3
+	.long 0x000
+	.long ele3
 ele3:
-.long 0xc00
-.long ele4
+	.long 0xc00
+	.long ele4
 ele4:
-.long 0x0b0
-.long ele5
+	.long 0x0b0
+	.long ele5
 ele5:
-.long 0x000
-.long 0
+	.long 0x000
+	.long 0
 rsum_list:
 	pushl %ebx				#save ebx
 	pushl %ebp				#push ebp

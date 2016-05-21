@@ -1,0 +1,53 @@
+.pos 0
+irmovl Stack,%esp
+rrmovl %esp,%ebp
+irmovl $3,%eax
+pushl %eax
+irmovl dest,%eax
+pushl %eax
+irmovl src,%eax
+pushl %eax
+call copy
+halt
+
+.align 4
+# Source block
+src:
+	.long 0x00a
+	.long 0x0b0
+	.long 0xc00
+# Destination block
+dest:
+	.long 0x111
+	.long 0x222
+	.long 0x333
+
+copy:
+	pushl %ebp
+	rrmovl %esp,%ebp
+	mrmovl 8(%ebp),%ebx		#ebx=src
+	mrmovl 12(%ebp),%ecx	#ecx=dest
+	mrmovl 16(%ebp),%edx	#edx=len
+	xorl %eax,%eax			#eax(result)=0
+	andl %edx,%edx			#len==0?
+	je return
+while:
+	mrmovl (%ebx),%esi		#esi=*src
+	rmmovl %esi,(%ecx)		#*dest=*src
+	irmovl $4,%edi
+	addl %edi,%ebx			#src++
+	addl %edi,%ecx			#dest++
+	xorl %esi,%eax			#result^=val
+	irmovl $1,%edi
+	subl %edi,%edx			#len--
+	andl %edx,%edx			#len!=0?
+	jne while				#then loop
+
+return:
+	rrmovl %ebp,%esp
+	popl %ebp
+	ret
+
+.pos 0x400
+Stack:
+
