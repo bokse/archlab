@@ -23,21 +23,26 @@ ele5:
 .long 0x000
 .long 0
 rsum_list:
+	pushl %ebx				#save ebx
 	pushl %ebp				#push ebp
 	rrmovl %esp,%ebp		#ebp = stack
 	xorl %eax,%eax		    #val = 0
-	mrmovl 8(%ebp),%edx		#edx = ls
+	mrmovl 12(%ebp),%edx		#edx = ls
 	andl %edx,%edx			#ls==0? 
-	je L4					#then end
-L5:							#recursion part
-	mrmovl (%edx),%ebx		#t = ls->val 
-	addl %ebx,%eax			#val += t 
-	mrmovl 4(%edx),%edx		#ls = ls->next 
-	andl %edx,%edx			#ls != 0? 
-	jne L5					#then loop
+	je L4					#then end, otherwise recursion
+	mrmovl (%edx),%ebx		#t = ls->val
+	andl %ebx,%ebx			#t!=0?
+	jne L6					#then L6
+	irmovl $1,%ebx			#else t=1 --> t = 1 or ls->val
+L6:
+	mrmovl 4(%edx),%esi		#esi = ls->next
+	pushl %esi				#push ls->next (as argument)
+	call rsum_list
+	addl %ebx, %eax			#eax = rsum_list(ls->next)+val
 L4:							#while ends
 	rrmovl %ebp,%esp		#load esp
-	popl %ebp				#load ebp 
+	popl %ebp				#load ebp
+	popl %ebx				#load ebx
 	ret
 .pos 0x400
 Stack:
