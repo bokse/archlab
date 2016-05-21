@@ -1,15 +1,5 @@
-                      | #
-                      | # Kyle Weller
-                      | # clkrbj 62-924-1035
-                      | # 
-                      | # sum elements of a linked list
-                      | # return sum in eax
-                      | # manually control frame pointers
-                      | #
-                      | # Initial code
-                      | 
   0x000:              | .pos 0
-  0x000: 30f400020000 | irmovl Stack,%esp
+  0x000: 30f400040000 | irmovl Stack,%esp
   0x006: 2045         | rrmovl %esp,%ebp
   0x008: 30f218000000 | irmovl ele1,%edx
   0x00e: a02f         | pushl %edx
@@ -33,22 +23,26 @@
   0x038: 00000000     | .long 0x000
   0x03c: 00000000     | .long 0
   0x040:              | sum_list:
-  0x040: a05f         | pushl %ebp		          # Save %ebp 
-  0x042: 6300         | 	xorl %eax,%eax		    # val = 0 
-  0x044: 2045         | 	rrmovl %esp,%ebp	    # Set frame ptr 
-  0x046: 502508000000 | 	mrmovl 8(%ebp),%edx	  # Get ls 
-  0x04c: 6222         | 	andl %edx,%edx		    # ls == 0? 
-  0x04e: 7368000000   | 	je L4			            # Yes, goto done 
-  0x053:              | L5:			                # Loop: 
-  0x053: 506200000000 | 	mrmovl (%edx),%esi	  # t = ls->val 
-  0x059: 6060         | 	addl %esi,%eax		    # val += t 
-  0x05b: 502204000000 | 	mrmovl 4(%edx),%edx	  # ls = ls->next 
-  0x061: 6222         | 	andl %edx,%edx		    # ls == 0? 
-  0x063: 7453000000   | 	jne L5			          # No, goto done 
-  0x068:              | L4:			                # Done: 
-  0x068: 2054         | 	rrmovl %ebp,%esp	    # Restore %esp 
-  0x06a: b05f         | 	popl %ebp		          # Restore %ebp 
-  0x06c: 90           | 	ret
-  0x200:              | .pos 0x200
-  0x200:              | Stack:
-                      | #Make sure to have newline after last line of code
+  0x040: a05f         | 	pushl %ebp				#push ebp
+  0x042: 2045         | 	rrmovl %esp,%ebp		#ebp = stack
+  0x044: 6300         | 	xorl %eax,%eax		    #val = 0
+  0x046: 502508000000 | 	mrmovl 8(%ebp),%edx		#edx = ls
+  0x04c: 6222         | 	andl %edx,%edx			#ls==0? 
+  0x04e: 7375000000   | 	je L4					#then end
+  0x053:              | L5:							#while
+  0x053: 503200000000 | 	mrmovl (%edx),%ebx		#t = ls->val
+  0x059: 6233         | 	andl %ebx,%ebx			#t!=0?
+  0x05b: 7466000000   | 	jne L6					#then L6
+  0x060: 30f301000000 | 	irmovl $1,%ebx			#else t=1
+  0x066:              | L6:
+  0x066: 6030         | 	addl %ebx,%eax			#val += t 
+  0x068: 502204000000 | 	mrmovl 4(%edx),%edx		#ls = ls->next 
+  0x06e: 6222         | 	andl %edx,%edx			#ls != 0? 
+  0x070: 7453000000   | 	jne L5					#then loop
+  0x075:              | L4:							#while ends
+  0x075: 2054         | 	rrmovl %ebp,%esp		#load esp
+  0x077: b05f         | 	popl %ebp				#load ebp 
+  0x079: 90           | 	ret
+  0x400:              | .pos 0x400
+  0x400:              | Stack:
+                      | 

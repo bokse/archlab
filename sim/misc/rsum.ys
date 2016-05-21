@@ -3,7 +3,7 @@ irmovl Stack,%esp
 rrmovl %esp,%ebp
 irmovl ele1,%edx
 pushl %edx
-call sum_list
+call rsum_list
 halt
 # Sample linked list
 .align 4
@@ -22,19 +22,15 @@ ele4:
 ele5:
 .long 0x000
 .long 0
-sum_list:
+rsum_list:
 	pushl %ebp				#push ebp
 	rrmovl %esp,%ebp		#ebp = stack
 	xorl %eax,%eax		    #val = 0
 	mrmovl 8(%ebp),%edx		#edx = ls
 	andl %edx,%edx			#ls==0? 
 	je L4					#then end
-L5:							#while
-	mrmovl (%edx),%ebx		#t = ls->val
-	andl %ebx,%ebx			#t!=0?
-	jne L6					#then L6
-	irmovl $1,%ebx			#else t=1
-L6:
+L5:							#recursion part
+	mrmovl (%edx),%ebx		#t = ls->val 
 	addl %ebx,%eax			#val += t 
 	mrmovl 4(%edx),%edx		#ls = ls->next 
 	andl %edx,%edx			#ls != 0? 
