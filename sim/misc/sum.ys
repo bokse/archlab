@@ -1,0 +1,44 @@
+.pos 0
+irmovl Stack,%esp
+rrmovl %esp,%ebp
+irmovl ele1,%edx
+pushl %edx
+call sum_list
+halt
+# Sample linked list
+.align 4
+ele1:
+.long 0x008
+.long ele2
+ele2:
+.long 0x000
+.long ele3
+ele3:
+.long 0xc00
+.long ele4
+ele4:
+.long 0x0b0
+.long ele5
+ele5:
+.long 0x000
+.long 0
+sum_list:
+	pushl %ebp				#push ebp
+	rrmovl %esp,%ebp		#ebp = stack
+	xorl %eax,%eax		    #val = 0
+	mrmovl 8(%ebp),%edx		#edx = ls
+	andl %edx,%edx			#ls==0? 
+	je L4					#then end
+L5:							#while
+	mrmovl (%edx),%ebx		#t = ls->val 
+	addl %ebx,%eax			#val += t 
+	mrmovl 4(%edx),%edx		#ls = ls->next 
+	andl %edx,%edx			#ls != 0? 
+	jne L5					#then loop
+L4:							#while ends
+	rrmovl %ebp,%esp		#load esp
+	popl %ebp				#load ebp 
+	ret
+.pos 0x400
+Stack:
+
