@@ -72,8 +72,8 @@ int gen_d_srcA()
     return (((if_id_curr->icode) == (I_RRMOVL) || (if_id_curr->icode) == 
         (I_RMMOVL) || (if_id_curr->icode) == (I_ALU) || (if_id_curr->icode)
          == (I_PUSHL)) ? (if_id_curr->ra) : ((if_id_curr->icode) == 
-        (I_POPL) || (if_id_curr->icode) == (I_RET) || (if_id_curr->icode)
-         == (I_LEAVE)) ? (REG_ESP) : (REG_NONE));
+        (I_POPL) || (if_id_curr->icode) == (I_RET)) ? (REG_ESP) : (
+        (if_id_curr->icode) == (I_LEAVE)) ? (REG_EBP) : (REG_NONE));
 }
 
 int gen_d_srcB()
@@ -83,8 +83,8 @@ int gen_d_srcB()
         (if_id_curr->icode) == (I_IADDL) || (if_id_curr->icode) == 
         (I_ISUBL)) ? (if_id_curr->rb) : ((if_id_curr->icode) == (I_PUSHL)
          || (if_id_curr->icode) == (I_POPL) || (if_id_curr->icode) == 
-        (I_CALL) || (if_id_curr->icode) == (I_RET) || (if_id_curr->icode)
-         == (I_LEAVE)) ? (REG_ESP) : (REG_NONE));
+        (I_CALL) || (if_id_curr->icode) == (I_RET)) ? (REG_ESP) : (
+        (if_id_curr->icode) == (I_LEAVE)) ? (REG_EBP) : (REG_NONE));
 }
 
 int gen_d_dstE()

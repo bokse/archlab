@@ -8,7 +8,7 @@
 # Loop&Npos is executed for all element.(in original code)
 # Instructions of Loop is necessary. irreducible.
 # If we consider many block in once, instructions of Npos are only executed sometimes.
-# I consider 15 blocks once.
+# I consider 10 blocks once.
 #
 # (*) Note: Pseudo-end of array is 0xccaaff.
 ##################################################################
@@ -33,7 +33,7 @@ Move:
   iaddl $4,%ecx
   xorl %eax,%eax		# count=0
 Loop:
-  isubl $15, %edx		# len<15? (len=len-15)
+  isubl $10, %edx		# len<2? (len=len-2)
   jl Rest
 Loop1:
   mrmovl (%ebx), %esi   # read val from src...
@@ -93,45 +93,15 @@ Loop10:
   mrmovl 36(%ebx), %esi
   rmmovl %esi, 36(%ecx)
   andl %esi, %esi
-  jle Loop11
-  iaddl $1, %eax
-Loop11:
-  mrmovl 40(%ebx), %esi
-  rmmovl %esi, 40(%ecx)
-  andl %esi, %esi
-  jle Loop12
-  iaddl $1, %eax
-Loop12:
-  mrmovl 44(%ebx), %esi
-  rmmovl %esi, 44(%ecx)
-  andl %esi, %esi
-  jle Loop13
-  iaddl $1, %eax
-Loop13:
-  mrmovl 48(%ebx), %esi
-  rmmovl %esi, 48(%ecx)
-  andl %esi, %esi
-  jle Loop14
-  iaddl $1, %eax
-Loop14:
-  mrmovl 52(%ebx), %esi
-  rmmovl %esi, 52(%ecx)
-  andl %esi, %esi
-  jle Loop15
-  iaddl $1, %eax
-Loop15:
-  mrmovl 56(%ebx), %esi
-  rmmovl %esi, 56(%ecx)
-  andl %esi, %esi
   jle Loopfin
   iaddl $1, %eax
 Loopfin:
-  iaddl $60, %ebx
-  iaddl $60, %ecx
+  iaddl $40, %ebx
+  iaddl $40, %ecx
   jmp Loop
 
 Rest:
-  iaddl $15, %edx		#len=len+15
+  iaddl $10, %edx		#len=len+2
   je Done				#if len==0 -> Done
   mrmovl (%ebx),%esi
   rmmovl %esi,(%ecx)
@@ -199,46 +169,6 @@ Rest9:
   je Done
   mrmovl 32(%ebx),%esi
   rmmovl %esi,32(%ecx)
-  andl %esi,%esi
-  jle Rest10
-  iaddl $1,%eax
-Rest10:
-  isubl $1, %edx
-  je Done
-  mrmovl 36(%ebx),%esi
-  rmmovl %esi,36(%ecx)
-  andl %esi,%esi
-  jle Rest11
-  iaddl $1,%eax
-Rest11:
-  isubl $1, %edx
-  je Done
-  mrmovl 40(%ebx),%esi
-  rmmovl %esi,40(%ecx)
-  andl %esi,%esi
-  jle Rest12
-  iaddl $1,%eax
-Rest12:
-  isubl $1, %edx
-  je Done
-  mrmovl 44(%ebx),%esi
-  rmmovl %esi,44(%ecx)
-  andl %esi,%esi
-  jle Rest13
-  iaddl $1,%eax
-Rest13:
-  isubl $1, %edx
-  je Done
-  mrmovl 48(%ebx),%esi
-  rmmovl %esi,48(%ecx)
-  andl %esi,%esi
-  jle Rest14
-  iaddl $1,%eax
-Rest14:
-  isubl $1, %edx
-  je Done
-  mrmovl 52(%ebx),%esi
-  rmmovl %esi,52(%ecx)
   andl %esi,%esi
   jle Done
   iaddl $1,%eax

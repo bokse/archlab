@@ -1,5 +1,5 @@
 #######################################################################
-# Test for copying block of size 4;
+# Test for copying block of size 60;
 #######################################################################
 	.pos 0
 main:	
@@ -7,22 +7,27 @@ main:
   irmovl Stack, %ebp    # Set up base pointer
 
 	# Set up arguments for copy function and then invoke it
-	irmovl $4, %eax # concatenate 4 elements from src to dst
+	irmovl $60, %eax # concatenate 60 elements from src to dst
 	pushl %eax
 	irmovl dest, %eax	# dst array
 	pushl %eax
 	irmovl src, %eax	# src array
 	pushl %eax
 	call ncopy		 
-	halt			# should halt with num nonzeros in %eax
+	call check	        # Call checker code
+	halt                    # should halt with 0xaaaa in %eax
 StartFun:
 #/* $begin ncopy-ys */
 ##################################################################
 # ncopy.ys - Concatenates a src block of len ints to dst.
 # Return the number of positive ints (>0) contained in src.
 #
-# Include your name and ID here.
+# 2014-18912 Ji Jeongwoo
 # Describe how and why you modified the baseline code.
+# Loop&Npos is executed for all element.(in original code)
+# Instructions of Loop is necessary. irreducible.
+# If we consider many block in once, instructions of Npos are only executed sometimes.
+# I consider 10 blocks once.
 #
 # (*) Note: Pseudo-end of array is 0xccaaff.
 ##################################################################
@@ -37,42 +42,225 @@ ncopy:  pushl %ebp    # Save old frame pointer
   mrmovl 12(%ebp),%ecx  # dst
 ##################################################################
 # You can modify this portion 
-  andl %edx,%edx    # len <= 0?
-  jle Done          # if so, goto Done:
-  #irmovl $-4,%eax
-  #addl %eax,%ecx
+  irmovl $0xccaaff,%edi # edi = pseudo-end
   isubl $4,%ecx
 Move:
-  #irmovl $4,%eax
-  #addl %eax,%ecx
   iaddl $4,%ecx
   mrmovl (%ecx),%esi    # *dst++
-  irmovl $0xccaaff,%eax # *dst == pseudo-end of file?
-  xorl %eax,%esi
+  xorl %edi,%esi
   jne Move              # not? goto Move
-  #irmovl $4,%eax        # Maintain pseudo-end of file
-  #addl %eax,%ecx
   iaddl $4,%ecx
-  xorl %eax,%eax
-Loop: 
+  xorl %eax,%eax		# count=0
+Loop:
+  isubl $15, %edx		# len<2? (len=len-2)
+  jl Rest
+Loop1:
   mrmovl (%ebx), %esi   # read val from src...
   rmmovl %esi, (%ecx)   # ...and store it to dst
   andl %esi, %esi       # val <= 0?
-  jle Npos              # if so, goto Npos:
-  #irmovl $1, %edi
-  #addl %edi, %eax       # count++
+  jle Loop2			# if so, goto Npos:
   iaddl $1,%eax
-Npos: 
-  #irmovl $1, %edi
-  #subl %edi, %edx       # len--
+Loop2:
+  mrmovl 4(%ebx), %esi
+  rmmovl %esi, 4(%ecx)
+  andl %esi, %esi		# val<=0?
+  jle Loop3
+  iaddl $1,%eax
+Loop3:
+  mrmovl 8(%ebx), %esi
+  rmmovl %esi, 8(%ecx)
+  andl %esi, %esi
+  jle Loop4
+  iaddl $1, %eax
+Loop4:
+  mrmovl 12(%ebx), %esi
+  rmmovl %esi, 12(%ecx)
+  andl %esi, %esi
+  jle Loop5
+  iaddl $1, %eax
+Loop5:
+  mrmovl 16(%ebx), %esi
+  rmmovl %esi, 16(%ecx)
+  andl %esi, %esi
+  jle Loop6
+  iaddl $1, %eax
+Loop6:
+  mrmovl 20(%ebx), %esi
+  rmmovl %esi, 20(%ecx)
+  andl %esi, %esi
+  jle Loop7
+  iaddl $1, %eax
+Loop7:
+  mrmovl 24(%ebx), %esi
+  rmmovl %esi, 24(%ecx)
+  andl %esi, %esi
+  jle Loop8
+  iaddl $1, %eax
+Loop8:
+  mrmovl 28(%ebx), %esi
+  rmmovl %esi, 28(%ecx)
+  andl %esi, %esi
+  jle Loop9
+  iaddl $1, %eax
+Loop9:
+  mrmovl 32(%ebx), %esi
+  rmmovl %esi, 32(%ecx)
+  andl %esi, %esi
+  jle Loop10
+  iaddl $1, %eax
+Loop10:
+  mrmovl 36(%ebx), %esi
+  rmmovl %esi, 36(%ecx)
+  andl %esi, %esi
+  jle Loop11
+  iaddl $1, %eax
+Loop11:
+  mrmovl 40(%ebx), %esi
+  rmmovl %esi, 40(%ecx)
+  andl %esi, %esi
+  jle Loop12
+  iaddl $1, %eax
+Loop12:
+  mrmovl 44(%ebx), %esi
+  rmmovl %esi, 44(%ecx)
+  andl %esi, %esi
+  jle Loop13
+  iaddl $1, %eax
+Loop13:
+  mrmovl 48(%ebx), %esi
+  rmmovl %esi, 48(%ecx)
+  andl %esi, %esi
+  jle Loop14
+  iaddl $1, %eax
+Loop14:
+  mrmovl 52(%ebx), %esi
+  rmmovl %esi, 52(%ecx)
+  andl %esi, %esi
+  jle Loop15
+  iaddl $1, %eax
+Loop15:
+  mrmovl 56(%ebx), %esi
+  rmmovl %esi, 56(%ecx)
+  andl %esi, %esi
+  jle Loopfin
+  iaddl $1, %eax
+Loopfin:
+  iaddl $60, %ebx
+  iaddl $60, %ecx
+  jmp Loop
+
+Rest:
+  iaddl $15, %edx		#len=len+2
+  je Done				#if len==0 -> Done
+  mrmovl (%ebx),%esi
+  rmmovl %esi,(%ecx)
+  andl %esi,%esi
+  jle Rest2
+  iaddl $1,%eax
+Rest2:
   isubl $1, %edx
-  #irmovl $4, %edi
-  #addl %edi, %ebx       # src++
-  iaddl $4, %ebx
-  #addl %edi, %ecx       # dst++
-  iaddl $4, %ecx
-  andl %edx,%edx        # len > 0?
-  jg Loop               # if so, goto Loop:
+  je Done
+  mrmovl 4(%ebx),%esi
+  rmmovl %esi,4(%ecx)
+  andl %esi,%esi
+  jle Rest3
+  iaddl $1,%eax
+Rest3:
+  isubl $1, %edx
+  je Done
+  mrmovl 8(%ebx),%esi
+  rmmovl %esi,8(%ecx)
+  andl %esi,%esi
+  jle Rest4
+  iaddl $1,%eax
+Rest4:
+  isubl $1, %edx
+  je Done
+  mrmovl 12(%ebx),%esi
+  rmmovl %esi,12(%ecx)
+  andl %esi,%esi
+  jle Rest5
+  iaddl $1,%eax
+Rest5:
+  isubl $1, %edx
+  je Done
+  mrmovl 16(%ebx),%esi
+  rmmovl %esi,16(%ecx)
+  andl %esi,%esi
+  jle Rest6
+  iaddl $1,%eax
+Rest6:
+  isubl $1, %edx
+  je Done
+  mrmovl 20(%ebx),%esi
+  rmmovl %esi,20(%ecx)
+  andl %esi,%esi
+  jle Rest7
+  iaddl $1,%eax
+Rest7:
+  isubl $1, %edx
+  je Done
+  mrmovl 24(%ebx),%esi
+  rmmovl %esi,24(%ecx)
+  andl %esi,%esi
+  jle Rest8
+  iaddl $1,%eax
+Rest8:
+  isubl $1, %edx
+  je Done
+  mrmovl 28(%ebx),%esi
+  rmmovl %esi,28(%ecx)
+  andl %esi,%esi
+  jle Rest9
+  iaddl $1,%eax
+Rest9:
+  isubl $1, %edx
+  je Done
+  mrmovl 32(%ebx),%esi
+  rmmovl %esi,32(%ecx)
+  andl %esi,%esi
+  jle Rest10
+  iaddl $1,%eax
+Rest10:
+  isubl $1, %edx
+  je Done
+  mrmovl 36(%ebx),%esi
+  rmmovl %esi,36(%ecx)
+  andl %esi,%esi
+  jle Rest11
+  iaddl $1,%eax
+Rest11:
+  isubl $1, %edx
+  je Done
+  mrmovl 40(%ebx),%esi
+  rmmovl %esi,40(%ecx)
+  andl %esi,%esi
+  jle Rest12
+  iaddl $1,%eax
+Rest12:
+  isubl $1, %edx
+  je Done
+  mrmovl 44(%ebx),%esi
+  rmmovl %esi,44(%ecx)
+  andl %esi,%esi
+  jle Rest13
+  iaddl $1,%eax
+Rest13:
+  isubl $1, %edx
+  je Done
+  mrmovl 48(%ebx),%esi
+  rmmovl %esi,48(%ecx)
+  andl %esi,%esi
+  jle Rest14
+  iaddl $1,%eax
+Rest14:
+  isubl $1, %edx
+  je Done
+  mrmovl 52(%ebx),%esi
+  rmmovl %esi,52(%ecx)
+  andl %esi,%esi
+  jle Done
+  iaddl $1,%eax
 ##################################################################
 # Do not modify the following section of code (Function epiloge)
 Done:
@@ -87,16 +275,199 @@ Done:
 End:
 #/* $end ncopy-ys */
 EndFun:
+#################################################################### 
+# Epilogue code for the correctness testing driver
+####################################################################
+
+# This is the correctness checking code.
+# It checks:
+#   1. %eax has 43.  Set %eax to 0xbbbb if not.
+#   2. The total length of the code is less than or equal to 1000.
+#      Set %eax to 0xcccc if not.
+#   3. The source data was copied to the destination.
+#      Set %eax to 0xdddd if not.
+#   4. The words just before and just after the destination region
+#      were not corrupted.  Set %eax to 0xeeee if not.
+# If all checks pass, then sets %eax to 0xaaaa
+check:
+	pushl %ebp
+	rrmovl %esp,%ebp
+	pushl %esi
+	pushl %ebx
+	pushl %edi
+	# Return value test
+	irmovl $43,%edx
+	subl %edx,%eax
+	je checkb
+	irmovl $0xbbbb,%eax  # Failed test #1
+	jmp cdone
+checkb:
+	# Code length check
+	irmovl EndFun,%eax
+	irmovl StartFun,%edx
+	subl %edx,%eax
+	irmovl $1000,%edx
+	subl %eax,%edx
+	jge checkm
+	irmovl $0xcccc,%eax  # Failed test #2
+	jmp cdone
+checkm:
+	irmovl dest, %edx # Pointer to next destination location
+	irmovl src,%ebx   # Pointer to next source location
+	irmovl $60,%edi  # Count
+	andl %edi,%edi
+  je checkpre         # Skip check if count = 0
+
+###############################################################################
+  irmovl $4, %eax
+  subl %eax,%edx
+
+movdst:
+  irmovl $4,%eax               # dst++
+  addl %eax,%edx
+  irmovl $0xccaaff,%eax      # if(dst == pseudoend) break
+  mrmovl (%edx), %esi             # load dst
+  xorl %eax,%esi                  # compare (dst) with pseudoend
+  jne movdst
+
+  irmovl $4,%eax               # Keep pseudo-end of file
+  addl %eax,%edx 
+
+  xorl %eax, %eax
+###############################################################################
+# Check if correctly copied values
+#
+mcloop:
+	mrmovl (%edx),%eax
+	mrmovl (%ebx),%esi
+	subl %esi,%eax
+	je  mok
+	irmovl $0xdddd,%eax # Failed test #3
+	jmp cdone
+mok:
+	irmovl $4,%eax
+	addl %eax,%edx	  # dst++
+	addl %eax,%ebx    # src++
+	irmovl $1,%eax
+	subl %eax,%edi    # cnt--
+	jg mcloop
+
+#  # Set up counter
+   irmovl $22,%edi
+   andl %edi,%edi
+   je checkpre:
+
+
+checkleft:
+  irmovl $0xffaacc,%eax
+  mrmovl (%edx),%ebx  # *dst
+  xorl %ebx, %eax
+  jne ups
+  irmovl $4,%eax     # dst++
+  addl %eax,%edx        
+  irmovl $1,%eax
+  subl %eax,%edi      # cnt--
+  jg checkleft
+  jmp checkpre
+ 
+ ups:
+  irmovl $0xeeee,%eax
+  jmp cdone
+
+checkpre:
+	# Check for corruption
+  irmovl Predest,%edx
+	mrmovl (%edx), %eax  # Get word before destination
+	irmovl $0xbcdefa, %edx
+	subl %edx,%eax
+	je checkpost
+	irmovl $0xeeee,%eax  # Failed test #4
+	jmp cdone
+checkpost:
+	# Check for corruption
+  irmovl Postdest,%edx
+	mrmovl (%edx), %eax  # Get word after destination
+	irmovl $0xdefabc, %edx
+	subl %edx,%eax
+	je checkok
+	irmovl $0xeeee,%eax # Failed test #4
+	jmp cdone
+checkok:
+	# Successful checks
+	irmovl $0xaaaa,%eax
+cdone:
+	popl %edi
+	popl %ebx
+	popl %esi
+	rrmovl %ebp, %esp
+	popl %ebp
+	ret
 
 ###############################
 # Source and destination blocks 
 ###############################
 	.align 4
 src:
-	.long 1
-	.long -2
+	.long -1
+	.long 2
 	.long 3
 	.long -4
+	.long -5
+	.long -6
+	.long 7
+	.long 8
+	.long -9
+	.long 10
+	.long 11
+	.long -12
+	.long -13
+	.long 14
+	.long 15
+	.long 16
+	.long 17
+	.long 18
+	.long -19
+	.long 20
+	.long 21
+	.long -22
+	.long 23
+	.long 24
+	.long 25
+	.long 26
+	.long -27
+	.long 28
+	.long 29
+	.long -30
+	.long 31
+	.long 32
+	.long 33
+	.long 34
+	.long -35
+	.long -36
+	.long -37
+	.long 38
+	.long 39
+	.long 40
+	.long 41
+	.long 42
+	.long -43
+	.long 44
+	.long 45
+	.long 46
+	.long 47
+	.long 48
+	.long 49
+	.long 50
+	.long -51
+	.long 52
+	.long 53
+	.long 54
+	.long 55
+	.long 56
+	.long -57
+	.long 58
+	.long 59
+	.long 60
 	.long 0xbcdefa # This shouldn't get moved
 
 	.align 16
@@ -105,7 +476,119 @@ Predest:
 dest:
 	.long 0xffaacc
 	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
 	.long 0xccaaff
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
 	.long 0xffaacc
 	.long 0xffaacc
 	.long 0xffaacc
