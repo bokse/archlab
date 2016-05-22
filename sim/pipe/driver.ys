@@ -93,10 +93,10 @@ EndFun:
 ###############################
 	.align 4
 src:
-	.long -1
+	.long 1
 	.long -2
 	.long 3
-	.long 4
+	.long -4
 	.long 0xbcdefa # This shouldn't get moved
 
 	.align 16
@@ -104,8 +104,8 @@ Predest:
 	.long 0xbcdefa
 dest:
 	.long 0xffaacc
-	.long 0xccaaff
 	.long 0xffaacc
+	.long 0xccaaff
 	.long 0xffaacc
 	.long 0xffaacc
 	.long 0xffaacc

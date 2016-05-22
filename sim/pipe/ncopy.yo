@@ -1,0 +1,69 @@
+                      | #/* $begin ncopy-ys */
+                      | ##################################################################
+                      | # ncopy.ys - Concatenates a src block of len ints to dst.
+                      | # Return the number of positive ints (>0) contained in src.
+                      | #
+                      | # Include your name and ID here.
+                      | # Describe how and why you modified the baseline code.
+                      | #
+                      | # (*) Note: Pseudo-end of array is 0xccaaff.
+                      | ##################################################################
+                      | # Do not modify this portion (Function Prolog)
+  0x000: a05f         | ncopy:  pushl %ebp    # Save old frame pointer
+  0x002: 2045         |   rrmovl %esp,%ebp    # Set up new frame pointer
+  0x004: a06f         |   pushl %esi          # Save callee-save regs
+  0x006: a03f         |   pushl %ebx
+  0x008: a07f         |   pushl %edi
+  0x00a: 503508000000 |   mrmovl 8(%ebp),%ebx   # src
+  0x010: 502510000000 |   mrmovl 16(%ebp),%edx  # len
+  0x016: 50150c000000 |   mrmovl 12(%ebp),%ecx  # dst
+                      | ##################################################################
+                      | # You can modify this portion 
+  0x01c: 6222         |   andl %edx,%edx    # len <= 0?
+  0x01e: 7178000000   |   jle Done          # if so, goto Done:
+                      |   #irmovl $-4,%eax
+                      |   #addl %eax,%ecx
+  0x023: f0f104000000 |   isubl $4,%ecx
+  0x029:              | Move:
+                      |   #irmovl $4,%eax
+                      |   #addl %eax,%ecx
+  0x029: c0f104000000 |   iaddl $4,%ecx
+  0x02f: 506100000000 |   mrmovl (%ecx),%esi    # *dst++
+  0x035: 30f0ffaacc00 |   irmovl $0xccaaff,%eax # *dst == pseudo-end of file?
+  0x03b: 6306         |   xorl %eax,%esi
+  0x03d: 7429000000   |   jne Move              # not? goto Move
+                      |   #irmovl $4,%eax        # Maintain pseudo-end of file
+                      |   #addl %eax,%ecx
+  0x042: c0f104000000 |   iaddl $4,%ecx
+  0x048: 6300         |   xorl %eax,%eax
+  0x04a:              | Loop: 
+  0x04a: 506300000000 |   mrmovl (%ebx), %esi   # read val from src...
+  0x050: 406100000000 |   rmmovl %esi, (%ecx)   # ...and store it to dst
+  0x056: 6266         |   andl %esi, %esi       # val <= 0?
+  0x058: 7163000000   |   jle Npos              # if so, goto Npos:
+                      |   #irmovl $1, %edi
+                      |   #addl %edi, %eax       # count++
+  0x05d: c0f001000000 |   iaddl $1,%eax
+  0x063:              | Npos: 
+                      |   #irmovl $1, %edi
+                      |   #subl %edi, %edx       # len--
+  0x063: f0f201000000 |   isubl $1, %edx
+                      |   #irmovl $4, %edi
+                      |   #addl %edi, %ebx       # src++
+  0x069: c0f304000000 |   iaddl $4, %ebx
+  0x06f: 6071         |   addl %edi, %ecx       # dst++
+  0x071: 6222         |   andl %edx,%edx        # len > 0?
+  0x073: 764a000000   |   jg Loop               # if so, goto Loop:
+                      | ##################################################################
+                      | # Do not modify the following section of code (Function epiloge)
+  0x078:              | Done:
+  0x078: b07f         |   popl %edi               # Restore callee-save registers
+  0x07a: b03f         |   popl %ebx
+  0x07c: b06f         |   popl %esi
+  0x07e: 2054         |   rrmovl %ebp, %esp
+  0x080: b05f         |   popl %ebp
+  0x082: 90           |   ret
+                      | ##################################################################
+                      | # Keep the following label at the end of your function
+  0x083:              | End:
+                      | #/* $end ncopy-ys */
