@@ -1,21 +1,3 @@
-#######################################################################
-# Test for copying block of size 4;
-#######################################################################
-	.pos 0
-main:	
-  irmovl Stack, %esp    # Set up stack pointer
-  irmovl Stack, %ebp    # Set up base pointer
-
-	# Set up arguments for copy function and then invoke it
-	irmovl $4, %eax # concatenate 4 elements from src to dst
-	pushl %eax
-	irmovl dest, %eax	# dst array
-	pushl %eax
-	irmovl src, %eax	# src array
-	pushl %eax
-	call ncopy		 
-	halt			# should halt with num nonzeros in %eax
-StartFun:
 #/* $begin ncopy-ys */
 ##################################################################
 # ncopy.ys - Concatenates a src block of len ints to dst.
@@ -27,7 +9,6 @@ StartFun:
 # Instructions of Loop is necessary. irreducible.
 # If we consider many block in once, instructions of Npos are only executed sometimes.
 # I consider 10 blocks once.
-# Also, reduce bubble because of consecutive mrmovl and rmmovl by using esi and edi both.
 #
 # (*) Note: Pseudo-end of array is 0xccaaff.
 ##################################################################
@@ -52,66 +33,66 @@ Move:
   iaddl $4,%ecx
   xorl %eax,%eax		# count=0
 Loop:
-  isubl $10, %edx		# len<10? (len=len-10)
+  isubl $10, %edx		# len<2? (len=len-2)
   jl Rest10
 Loop1:
   mrmovl (%ebx), %esi   # read val from src...
-  mrmovl 4(%ebx), %edi
   rmmovl %esi, (%ecx)   # ...and store it to dst
   andl %esi, %esi       # val <= 0?
   jle Loop2			# if so, goto Npos:
   iaddl $1,%eax
 Loop2:
-  rmmovl %edi, 4(%ecx)
-  andl %edi, %edi		# val<=0?
+  mrmovl 4(%ebx), %esi
+  rmmovl %esi, 4(%ecx)
+  andl %esi, %esi		# val<=0?
   jle Loop3
   iaddl $1,%eax
 Loop3:
   mrmovl 8(%ebx), %esi
-  mrmovl 12(%ebx), %edi
   rmmovl %esi, 8(%ecx)
   andl %esi, %esi
   jle Loop4
   iaddl $1, %eax
 Loop4:
-  rmmovl %edi, 12(%ecx)
-  andl %edi, %edi
+  mrmovl 12(%ebx), %esi
+  rmmovl %esi, 12(%ecx)
+  andl %esi, %esi
   jle Loop5
   iaddl $1, %eax
 Loop5:
   mrmovl 16(%ebx), %esi
-  mrmovl 20(%ebx), %edi
   rmmovl %esi, 16(%ecx)
   andl %esi, %esi
   jle Loop6
   iaddl $1, %eax
 Loop6:
-  rmmovl %edi, 20(%ecx)
-  andl %edi, %edi
+  mrmovl 20(%ebx), %esi
+  rmmovl %esi, 20(%ecx)
+  andl %esi, %esi
   jle Loop7
   iaddl $1, %eax
 Loop7:
   mrmovl 24(%ebx), %esi
-  mrmovl 28(%ebx), %edi
   rmmovl %esi, 24(%ecx)
   andl %esi, %esi
   jle Loop8
   iaddl $1, %eax
 Loop8:
-  rmmovl %edi, 28(%ecx)
-  andl %edi, %edi
+  mrmovl 28(%ebx), %esi
+  rmmovl %esi, 28(%ecx)
+  andl %esi, %esi
   jle Loop9
   iaddl $1, %eax
 Loop9:
   mrmovl 32(%ebx), %esi
-  mrmovl 36(%ebx), %edi
   rmmovl %esi, 32(%ecx)
   andl %esi, %esi
   jle Loop10
   iaddl $1, %eax
 Loop10:
-  rmmovl %edi, 36(%ecx)
-  andl %edi, %edi
+  mrmovl 36(%ebx), %esi
+  rmmovl %esi, 36(%ecx)
+  andl %esi, %esi
   jle Loopfin
   iaddl $1, %eax
 Loopfin:
@@ -120,8 +101,8 @@ Loopfin:
   jmp Loop
 
 Rest10:
-  iaddl $5, %edx		#len=len+5
-  jl Rest51				#if len<0 -> Rest51
+  iaddl $5, %edx		#len=len+2
+  jl Rest51				#if len==0 -> Done
 R11:
   mrmovl (%ebx),%esi
   rmmovl %esi,(%ecx)
@@ -201,58 +182,3 @@ Done:
 # Keep the following label at the end of your function
 End:
 #/* $end ncopy-ys */
-EndFun:
-
-###############################
-# Source and destination blocks 
-###############################
-	.align 4
-src:
-	.long 1
-	.long 2
-	.long -3
-	.long -4
-	.long 0xbcdefa # This shouldn't get moved
-
-	.align 16
-Predest:
-	.long 0xbcdefa
-dest:
-	.long 0xffaacc
-	.long 0xccaaff
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-Postdest:
-	.long 0xdefabc
-
-.align 4
-# Run time stack
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-	.long 0
-
-Stack:

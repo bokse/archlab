@@ -27,6 +27,7 @@ StartFun:
 # Instructions of Loop is necessary. irreducible.
 # If we consider many block in once, instructions of Npos are only executed sometimes.
 # I consider 10 blocks once.
+# Also, reduce bubble because of consecutive mrmovl and rmmovl by using esi and edi both.
 #
 # (*) Note: Pseudo-end of array is 0xccaaff.
 ##################################################################
@@ -51,212 +52,139 @@ Move:
   iaddl $4,%ecx
   xorl %eax,%eax		# count=0
 Loop:
-  isubl $15, %edx		# len<2? (len=len-2)
-  jl Rest
+  isubl $10, %edx		# len<10? (len=len-10)
+  jl Rest10
 Loop1:
   mrmovl (%ebx), %esi   # read val from src...
+  mrmovl 4(%ebx), %edi
   rmmovl %esi, (%ecx)   # ...and store it to dst
   andl %esi, %esi       # val <= 0?
   jle Loop2			# if so, goto Npos:
   iaddl $1,%eax
 Loop2:
-  mrmovl 4(%ebx), %esi
-  rmmovl %esi, 4(%ecx)
-  andl %esi, %esi		# val<=0?
+  rmmovl %edi, 4(%ecx)
+  andl %edi, %edi		# val<=0?
   jle Loop3
   iaddl $1,%eax
 Loop3:
   mrmovl 8(%ebx), %esi
+  mrmovl 12(%ebx), %edi
   rmmovl %esi, 8(%ecx)
   andl %esi, %esi
   jle Loop4
   iaddl $1, %eax
 Loop4:
-  mrmovl 12(%ebx), %esi
-  rmmovl %esi, 12(%ecx)
-  andl %esi, %esi
+  rmmovl %edi, 12(%ecx)
+  andl %edi, %edi
   jle Loop5
   iaddl $1, %eax
 Loop5:
   mrmovl 16(%ebx), %esi
+  mrmovl 20(%ebx), %edi
   rmmovl %esi, 16(%ecx)
   andl %esi, %esi
   jle Loop6
   iaddl $1, %eax
 Loop6:
-  mrmovl 20(%ebx), %esi
-  rmmovl %esi, 20(%ecx)
-  andl %esi, %esi
+  rmmovl %edi, 20(%ecx)
+  andl %edi, %edi
   jle Loop7
   iaddl $1, %eax
 Loop7:
   mrmovl 24(%ebx), %esi
+  mrmovl 28(%ebx), %edi
   rmmovl %esi, 24(%ecx)
   andl %esi, %esi
   jle Loop8
   iaddl $1, %eax
 Loop8:
-  mrmovl 28(%ebx), %esi
-  rmmovl %esi, 28(%ecx)
-  andl %esi, %esi
+  rmmovl %edi, 28(%ecx)
+  andl %edi, %edi
   jle Loop9
   iaddl $1, %eax
 Loop9:
   mrmovl 32(%ebx), %esi
+  mrmovl 36(%ebx), %edi
   rmmovl %esi, 32(%ecx)
   andl %esi, %esi
   jle Loop10
   iaddl $1, %eax
 Loop10:
-  mrmovl 36(%ebx), %esi
-  rmmovl %esi, 36(%ecx)
-  andl %esi, %esi
-  jle Loop11
-  iaddl $1, %eax
-Loop11:
-  mrmovl 40(%ebx), %esi
-  rmmovl %esi, 40(%ecx)
-  andl %esi, %esi
-  jle Loop12
-  iaddl $1, %eax
-Loop12:
-  mrmovl 44(%ebx), %esi
-  rmmovl %esi, 44(%ecx)
-  andl %esi, %esi
-  jle Loop13
-  iaddl $1, %eax
-Loop13:
-  mrmovl 48(%ebx), %esi
-  rmmovl %esi, 48(%ecx)
-  andl %esi, %esi
-  jle Loop14
-  iaddl $1, %eax
-Loop14:
-  mrmovl 52(%ebx), %esi
-  rmmovl %esi, 52(%ecx)
-  andl %esi, %esi
-  jle Loop15
-  iaddl $1, %eax
-Loop15:
-  mrmovl 56(%ebx), %esi
-  rmmovl %esi, 56(%ecx)
-  andl %esi, %esi
+  rmmovl %edi, 36(%ecx)
+  andl %edi, %edi
   jle Loopfin
   iaddl $1, %eax
 Loopfin:
-  iaddl $60, %ebx
-  iaddl $60, %ecx
+  iaddl $40, %ebx
+  iaddl $40, %ecx
   jmp Loop
 
-Rest:
-  iaddl $15, %edx		#len=len+2
-  je Done				#if len==0 -> Done
+Rest10:
+  iaddl $5, %edx		#len=len+5
+  jl Rest51				#if len<0 -> Rest51
+R11:
   mrmovl (%ebx),%esi
   rmmovl %esi,(%ecx)
   andl %esi,%esi
-  jle Rest2
+  jle R12
   iaddl $1,%eax
-Rest2:
-  isubl $1, %edx
-  je Done
+R12:
   mrmovl 4(%ebx),%esi
   rmmovl %esi,4(%ecx)
   andl %esi,%esi
-  jle Rest3
+  jle R13
   iaddl $1,%eax
-Rest3:
-  isubl $1, %edx
-  je Done
+R13:
   mrmovl 8(%ebx),%esi
   rmmovl %esi,8(%ecx)
   andl %esi,%esi
-  jle Rest4
+  jle R14
   iaddl $1,%eax
-Rest4:
-  isubl $1, %edx
-  je Done
+R14:
   mrmovl 12(%ebx),%esi
   rmmovl %esi,12(%ecx)
   andl %esi,%esi
-  jle Rest5
+  jle R15
   iaddl $1,%eax
-Rest5:
-  isubl $1, %edx
-  je Done
+R15:
   mrmovl 16(%ebx),%esi
   rmmovl %esi,16(%ecx)
   andl %esi,%esi
-  jle Rest6
+  jle Rest10F
   iaddl $1,%eax
-Rest6:
-  isubl $1, %edx
-  je Done
-  mrmovl 20(%ebx),%esi
-  rmmovl %esi,20(%ecx)
+Rest10F:
+  iaddl $20,%ebx
+  iaddl $20,%ecx
+  isubl $5,%edx
+Rest51:
+  iaddl $4, %edx
+  jl Done
+  mrmovl (%ebx),%esi
+  rmmovl %esi,(%ecx)
   andl %esi,%esi
-  jle Rest7
+  jle Rest52
   iaddl $1,%eax
-Rest7:
+Rest52:
   isubl $1, %edx
-  je Done
-  mrmovl 24(%ebx),%esi
-  rmmovl %esi,24(%ecx)
+  jl Done
+  mrmovl 4(%ebx),%esi
+  rmmovl %esi,4(%ecx)
   andl %esi,%esi
-  jle Rest8
+  jle Rest53
   iaddl $1,%eax
-Rest8:
+Rest53:
   isubl $1, %edx
-  je Done
-  mrmovl 28(%ebx),%esi
-  rmmovl %esi,28(%ecx)
+  jl Done
+  mrmovl 8(%ebx),%esi
+  rmmovl %esi,8(%ecx)
   andl %esi,%esi
-  jle Rest9
+  jle Rest54
   iaddl $1,%eax
-Rest9:
+Rest54:
   isubl $1, %edx
-  je Done
-  mrmovl 32(%ebx),%esi
-  rmmovl %esi,32(%ecx)
-  andl %esi,%esi
-  jle Rest10
-  iaddl $1,%eax
-Rest10:
-  isubl $1, %edx
-  je Done
-  mrmovl 36(%ebx),%esi
-  rmmovl %esi,36(%ecx)
-  andl %esi,%esi
-  jle Rest11
-  iaddl $1,%eax
-Rest11:
-  isubl $1, %edx
-  je Done
-  mrmovl 40(%ebx),%esi
-  rmmovl %esi,40(%ecx)
-  andl %esi,%esi
-  jle Rest12
-  iaddl $1,%eax
-Rest12:
-  isubl $1, %edx
-  je Done
-  mrmovl 44(%ebx),%esi
-  rmmovl %esi,44(%ecx)
-  andl %esi,%esi
-  jle Rest13
-  iaddl $1,%eax
-Rest13:
-  isubl $1, %edx
-  je Done
-  mrmovl 48(%ebx),%esi
-  rmmovl %esi,48(%ecx)
-  andl %esi,%esi
-  jle Rest14
-  iaddl $1,%eax
-Rest14:
-  isubl $1, %edx
-  je Done
-  mrmovl 52(%ebx),%esi
-  rmmovl %esi,52(%ecx)
+  jl Done
+  mrmovl 12(%ebx),%esi
+  rmmovl %esi,12(%ecx)
   andl %esi,%esi
   jle Done
   iaddl $1,%eax
@@ -283,63 +211,63 @@ src:
 	.long -1
 	.long 2
 	.long 3
-	.long -4
+	.long 4
 	.long -5
-	.long -6
-	.long -7
-	.long -8
-	.long -9
-	.long -10
+	.long 6
+	.long 7
+	.long 8
+	.long 9
+	.long 10
 	.long 11
 	.long 12
 	.long -13
 	.long 14
 	.long -15
-	.long -16
-	.long -17
+	.long 16
+	.long 17
 	.long 18
 	.long -19
-	.long -20
+	.long 20
 	.long 21
 	.long -22
-	.long -23
-	.long 24
-	.long 25
-	.long -26
-	.long -27
-	.long 28
+	.long 23
+	.long -24
+	.long -25
+	.long 26
+	.long 27
+	.long -28
 	.long -29
 	.long -30
-	.long 31
-	.long -32
+	.long -31
+	.long 32
 	.long 33
-	.long 34
+	.long -34
 	.long 35
 	.long 36
-	.long -37
-	.long -38
-	.long -39
+	.long 37
+	.long 38
+	.long 39
 	.long 40
-	.long 41
-	.long 42
-	.long -43
-	.long 44
+	.long -41
+	.long -42
+	.long 43
+	.long -44
 	.long 45
 	.long 46
 	.long 47
-	.long 48
-	.long 49
-	.long 50
+	.long -48
+	.long -49
+	.long -50
 	.long -51
-	.long 52
-	.long 53
-	.long 54
-	.long 55
-	.long 56
+	.long -52
+	.long -53
+	.long -54
+	.long -55
+	.long -56
 	.long -57
 	.long -58
 	.long -59
-	.long 60
+	.long -60
 	.long -61
 	.long -62
 	.long -63
@@ -354,32 +282,32 @@ dest:
 	.long 0xffaacc
 	.long 0xffaacc
 	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
-	.long 0xffaacc
 	.long 0xccaaff
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
+	.long 0xffaacc
 	.long 0xffaacc
 	.long 0xffaacc
 	.long 0xffaacc
