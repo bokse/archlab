@@ -5,6 +5,11 @@
 #
 # 2014-18912 Ji Jeongwoo
 # Describe how and why you modified the baseline code.
+# Loop&Npos is executed for all element.(in original code)
+# Instructions of Loop is necessary. irreducible.
+# If we consider many block in once, instructions of Npos are only executed sometimes.
+# I consider 10 blocks once.
+# Also, reduce bubble because of consecutive mrmovl and rmmovl by using esi and edi both.
 #
 # (*) Note: Pseudo-end of array is 0xccaaff.
 ##################################################################
@@ -19,9 +24,7 @@ ncopy:  pushl %ebp    # Save old frame pointer
   mrmovl 12(%ebp),%ecx  # dst
 ##################################################################
 # You can modify this portion 
-  irmovl $0xccaaff,%edi
-  andl %edx,%edx    # len <= 0?
-  je Done          # if so, goto Done:
+  irmovl $0xccaaff,%edi # edi = pseudo-end
   isubl $4,%ecx
 Move:
   iaddl $4,%ecx
@@ -29,19 +32,144 @@ Move:
   xorl %edi,%esi
   jne Move              # not? goto Move
   iaddl $4,%ecx
-  xorl %eax,%eax
-Loop: 
+  xorl %eax,%eax		# count=0
+Loop:
+  isubl $10, %edx		# len<10? (len=len-10)
+  jl Rest10
+Loop1:
   mrmovl (%ebx), %esi   # read val from src...
+  mrmovl 4(%ebx), %edi
   rmmovl %esi, (%ecx)   # ...and store it to dst
   andl %esi, %esi       # val <= 0?
-  jle Npos              # if so, goto Npos:
+  jle Loop2			# if so, goto Npos:
   iaddl $1,%eax
-Npos: 
+Loop2:
+  rmmovl %edi, 4(%ecx)
+  andl %edi, %edi		# val<=0?
+  jle Loop3
+  iaddl $1,%eax
+Loop3:
+  mrmovl 8(%ebx), %esi
+  mrmovl 12(%ebx), %edi
+  rmmovl %esi, 8(%ecx)
+  andl %esi, %esi
+  jle Loop4
+  iaddl $1, %eax
+Loop4:
+  rmmovl %edi, 12(%ecx)
+  andl %edi, %edi
+  jle Loop5
+  iaddl $1, %eax
+Loop5:
+  mrmovl 16(%ebx), %esi
+  mrmovl 20(%ebx), %edi
+  rmmovl %esi, 16(%ecx)
+  andl %esi, %esi
+  jle Loop6
+  iaddl $1, %eax
+Loop6:
+  rmmovl %edi, 20(%ecx)
+  andl %edi, %edi
+  jle Loop7
+  iaddl $1, %eax
+Loop7:
+  mrmovl 24(%ebx), %esi
+  mrmovl 28(%ebx), %edi
+  rmmovl %esi, 24(%ecx)
+  andl %esi, %esi
+  jle Loop8
+  iaddl $1, %eax
+Loop8:
+  rmmovl %edi, 28(%ecx)
+  andl %edi, %edi
+  jle Loop9
+  iaddl $1, %eax
+Loop9:
+  mrmovl 32(%ebx), %esi
+  mrmovl 36(%ebx), %edi
+  rmmovl %esi, 32(%ecx)
+  andl %esi, %esi
+  jle Loop10
+  iaddl $1, %eax
+Loop10:
+  rmmovl %edi, 36(%ecx)
+  andl %edi, %edi
+  jle Loopfin
+  iaddl $1, %eax
+Loopfin:
+  iaddl $40, %ebx
+  iaddl $40, %ecx
+  jmp Loop
+
+Rest10:
+  iaddl $5, %edx		#len=len+5
+  jl Rest51				#if len<0 -> Rest51
+R11:
+  mrmovl (%ebx),%esi
+  rmmovl %esi,(%ecx)
+  andl %esi,%esi
+  jle R12
+  iaddl $1,%eax
+R12:
+  mrmovl 4(%ebx),%esi
+  rmmovl %esi,4(%ecx)
+  andl %esi,%esi
+  jle R13
+  iaddl $1,%eax
+R13:
+  mrmovl 8(%ebx),%esi
+  rmmovl %esi,8(%ecx)
+  andl %esi,%esi
+  jle R14
+  iaddl $1,%eax
+R14:
+  mrmovl 12(%ebx),%esi
+  rmmovl %esi,12(%ecx)
+  andl %esi,%esi
+  jle R15
+  iaddl $1,%eax
+R15:
+  mrmovl 16(%ebx),%esi
+  rmmovl %esi,16(%ecx)
+  andl %esi,%esi
+  jle Rest10F
+  iaddl $1,%eax
+Rest10F:
+  iaddl $20,%ebx
+  iaddl $20,%ecx
+  isubl $5,%edx
+Rest51:
+  iaddl $4, %edx
+  jl Done
+  mrmovl (%ebx),%esi
+  rmmovl %esi,(%ecx)
+  andl %esi,%esi
+  jle Rest52
+  iaddl $1,%eax
+Rest52:
   isubl $1, %edx
-  iaddl $4, %ebx
-  iaddl $4, %ecx
-  andl %edx,%edx        # len > 0?
-  jg Loop               # if so, goto Loop:
+  jl Done
+  mrmovl 4(%ebx),%esi
+  rmmovl %esi,4(%ecx)
+  andl %esi,%esi
+  jle Rest53
+  iaddl $1,%eax
+Rest53:
+  isubl $1, %edx
+  jl Done
+  mrmovl 8(%ebx),%esi
+  rmmovl %esi,8(%ecx)
+  andl %esi,%esi
+  jle Rest54
+  iaddl $1,%eax
+Rest54:
+  isubl $1, %edx
+  jl Done
+  mrmovl 12(%ebx),%esi
+  rmmovl %esi,12(%ecx)
+  andl %esi,%esi
+  jle Done
+  iaddl $1,%eax
 ##################################################################
 # Do not modify the following section of code (Function epiloge)
 Done:
